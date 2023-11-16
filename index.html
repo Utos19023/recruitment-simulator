@@ -64,6 +64,23 @@
             margin-bottom: 5px;
             cursor: pointer; /* Add pointer cursor to indicate it's clickable */
         }
+
+        .rare6 {
+            border: 2px solid rgb(252, 131, 18); /* 赤オレンジ、星6 */
+        }
+
+        .rare5 {
+            border: 2px solid #ffd000; /* 黄色、星5 */
+        }
+
+        .rare4 {
+            border: 2px solid rgb(182, 128, 252); /* 薄紫、星4 */
+        }
+
+        .underrare3 {
+            border: 2px solid #15ff00; /* 緑、星3以下 */
+        }
+
     </style>
     <script>
         var people = [
@@ -232,6 +249,8 @@
                 generateCombination(selectedCheckboxes, i, 0, [], combinations);
             }
 
+            combinations.reverse();
+
             // Display combinations and matching people
             for (var i = 0; i < combinations.length; i++) {
                 var combination = combinations[i];
@@ -309,6 +328,17 @@
                 matchingPersonPhoto.src = person.photo;
                 matchingPersonPhoto.alt = person.name + "'s photo";
                 matchingPersonPhoto.classList.add('matching-person-photo');
+
+                if (person.rarity > 5) {
+                    matchingPersonPhoto.classList.add('rare6');
+                } else if (person.rarity > 4) {
+                    matchingPersonPhoto.classList.add('rare5');
+                } else if (person.rarity > 3) {
+                    matchingPersonPhoto.classList.add('rare4');
+                } else {
+                    matchingPersonPhoto.classList.add('underrare3');
+                }
+
                 matchingPersonPhoto.onclick = function(link) {
                     return function() {
                         window.open(link, '_blank');
