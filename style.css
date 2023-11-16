@@ -1,0 +1,88 @@
+@charset "utf-8";
+
+/*こんにちは*/
+.kyujin-list-item>input[type=checkbox] {
+    display: none;
+}
+
+.kyujin-list-item {
+    width: 31%;
+    display: inline-block;
+    margin: 0 0 5px 4px!important;
+    box-shadow: 0 1px 1px 0 rgba(100,100,100,.1);
+}
+
+.kyujin-list-item>input[type=checkbox]+label {
+    display: block;
+    width: 100%;
+    letter-spacing: 1px;
+    border: solid 1px silver;
+    color: #a0a0a0;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 2px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 700;
+}
+
+.kyujin-list-item input:checked+label {
+    background: black;
+    color: #FFF;
+}
+
+#tablebody table tr th {
+    border: 1px solid #dddddd;
+    background-color: #efefef;
+}
+
+#tablebody table {
+    font-size: 12px;
+    margin-bottom: 15px;
+    max-width: 600px;
+    width: 100%;
+}
+
+#tablebody table tr {
+    border: 1px solid #e2e2e2;
+}
+
+#tablebody table tr th,#tablebody table tr td {
+    padding: 0 8px 0 8px;
+}
+
+.kyujin-list {
+    letter-spacing: -.4em;
+    padding: 5px 4px 0 0;
+    margin: 0;
+}
+
+#resultbox {
+    max-width: 600px;
+    width: 100%;
+}
+
+
+@media (max-width: 600px) {
+    #tablebody table {
+      width: 100%;
+    }
+    #resultbox {
+        width: 100%;
+    }
+}
+
+
+* {
+    box-sizing: border-box;
+}
+
+tr {
+    display: table-row;
+    vertical-align: inherit;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
