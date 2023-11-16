@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公開求人シミュレーター</title>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        .person-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .person-photo {
+            width: 100px; /* Adjust the size of the photo as needed */
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px; /* Set border radius for square photo */
+            margin-bottom: 10px;
+            cursor: pointer; /* Add pointer cursor to indicate it's clickable */
+        }
+
+        .person-name {
+            text-decoration: none;
+            color: #0366d6; /* GitHub link color, you can change it */
+            font-weight: bold;
+        }
+
+        .combination-container {
+            margin-top: 20px;
+        }
+
+        .combination {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .combination-options {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .matching-people-container {
+            display: flex;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .matching-person-container {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .matching-person-photo {
+            width: 60px; /* Adjust the size of the photo as needed */
+            height: 60px;
+            object-fit: cover;
+            border-radius: 10px; /* Set border radius for square photo */
+            margin-bottom: 5px;
+            cursor: pointer; /* Add pointer cursor to indicate it's clickable */
+        }
+    </style>
+    <script>
+        var people = [
+            /*テンプレート*/
+            { name: '名', options: ['1', '2', '3'], rarity: 6, photo: './charactor_icon/.png', profileLink: '' },
+            
+            /*星6*/
+            { name: 'シージ', options: ['先鋒', '近距離', '火力', 'COST回復', '上級エリート'], rarity: 6, photo: './charactor_icon/siege.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B7%E3%83%BC%E3%82%B8' },
+            { name: 'バグパイプ', options: ['先鋒', '近距離', '火力', 'COST回復', '上級エリート'], rarity: 6, photo: './charactor_icon/bagpipe.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%90%E3%82%B0%E3%83%91%E3%82%A4%E3%83%97' },
+            { name: 'シルバーアッシュ', options: ['前衛', '近距離', '火力', '支援', '上級エリート'], rarity: 6, photo: './charactor_icon/silverash.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B7%E3%83%AB%E3%83%90%E3%83%BC%E3%82%A2%E3%83%83%E3%82%B7%E3%83%A5' },
+            { name: 'スカジ', options: ['前衛', '近距離', '火力', '生存', '上級エリート'], rarity: 6, photo: './charactor_icon/skadi.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B9%E3%82%AB%E3%82%B8' },
+            { name: 'チェン', options: ['前衛', '近距離', '火力', '爆発力', '上級エリート'], rarity: 6, photo: './charactor_icon/chen.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%81%E3%82%A7%E3%83%B3' },
+            { name: 'ブレイズ', options: ['前衛', '近距離', '火力', '生存', '上級エリート'], rarity: 6, photo: './charactor_icon/blaze.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%96%E3%83%AC%E3%82%A4%E3%82%BA' },
+            { name: 'ヘラグ', options: ['前衛', '近距離', '火力', '生存', '上級エリート'], rarity: 6, photo: './charactor_icon/hellagur.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%98%E3%83%A9%E3%82%B0' },
+            { name: 'サリア', options: ['重装', '近距離', '防御', '治療', '支援', '上級エリート'], rarity: 6, photo: './charactor_icon/saria.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B5%E3%83%AA%E3%82%A2' },
+            { name: 'ホシグマ', options: ['重装', '近距離', '火力', '防御', '上級エリート'], rarity: 6, photo: './charactor_icon/hoshiguma.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%9B%E3%82%B7%E3%82%B0%E3%83%9E' },
+            { name: 'エクシア', options: ['狙撃', '遠距離', '火力', '上級エリート'], rarity: 6, photo: './charactor_icon/exusiai.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A8%E3%82%AF%E3%82%B7%E3%82%A2' },
+            { name: 'シュヴァルツ', options: ['狙撃', '遠距離', '火力', '上級エリート'], rarity: 6, photo: './charactor_icon/schwarz.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B7%E3%83%A5%E3%83%B4%E3%82%A1%E3%83%AB%E3%83%84' },
+            { name: 'ロサ', options: ['狙撃', '遠距離', '火力', '牽制', '上級エリート'], rarity: 6, photo: './charactor_icon/rosa.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%AD%E3%82%B5' },
+            { name: 'イフリータ', options: ['術師', '遠距離', '範囲攻撃', '弱化', '上級エリート'], rarity: 6, photo: './charactor_icon/ifrit.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A4%E3%83%95%E3%83%AA%E3%83%BC%E3%82%BF' },
+            { name: 'ケオベ', options: ['術師', '遠距離', '火力', '牽制', '上級エリート'], rarity: 6, photo: './charactor_icon/ceobe.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B1%E3%82%AA%E3%83%99' },
+            { name: 'モスティマ', options: ['術師', '遠距離', '支援', '範囲攻撃', '牽制', '上級エリート'], rarity: 6, photo: './charactor_icon/mostima.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%A2%E3%82%B9%E3%83%86%E3%82%A3%E3%83%9E' },
+            { name: 'シャイニング', options: ['医療', '遠距離', '治療', '支援', '上級エリート'], rarity: 6, photo: './charactor_icon/shining.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B7%E3%83%A3%E3%82%A4%E3%83%8B%E3%83%B3%E3%82%B0' },
+            { name: 'ナイチンゲール', options: ['医療', '遠距離', '治療', '支援', '上級エリート'], rarity: 6, photo: './charactor_icon/nightingale.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%8A%E3%82%A4%E3%83%81%E3%83%B3%E3%82%B2%E3%83%BC%E3%83%AB' },
+            { name: 'マゼラン', options: ['補助', '遠距離', '火力', '支援', '減速', '上級エリート'], rarity: 6, photo: './charactor_icon/magallan.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%9E%E3%82%BC%E3%83%A9%E3%83%B3' },
+            { name: 'スズラン', options: ['補助', '遠距離', '火力', '支援', '減速', '上級エリート'], rarity: 6, photo: './charactor_icon/suzuran.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B9%E3%82%BA%E3%83%A9%E3%83%B3' },
+            { name: 'ア', options: ['特殊', '遠距離', '火力', '支援', '上級エリート'], rarity: 6, photo: './charactor_icon/aak.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A2' },
+            { name: 'ウィーディ', options: ['特殊', '近距離', '火力', '牽制', '強制移動', '上級エリート'], rarity: 6, photo: './charactor_icon/weedy.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A6%E3%82%A3%E3%83%BC%E3%83%87%E3%82%A3' },
+            { name: 'ファントム', options: ['特殊', '近距離', '火力', '牽制', '高速再配置', '上級エリート'], rarity: 6, photo: './charactor_icon/phantom.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%95%E3%82%A1%E3%83%B3%E3%83%88%E3%83%A0' },
+
+            /*星5*/
+            { name: 'エリジウム', options: ['先鋒', '近距離', '支援', 'COST回復', 'エリート'], rarity: 5, photo: './charactor_icon/elysium.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A8%E3%83%AA%E3%82%B8%E3%82%A6%E3%83%A0' },
+            { name: 'ズィマー', options: ['先鋒', '近距離', '支援', 'COST回復', 'エリート'], rarity: 5, photo: './charactor_icon/zima.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%BA%E3%82%A3%E3%83%9E%E3%83%BC' },
+            { name: 'テキサス', options: ['先鋒', '近距離', '牽制', 'COST回復', 'エリート'], rarity: 5, photo: './charactor_icon/texas.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%86%E3%82%AD%E3%82%B5%E3%82%B9' },
+            { name: 'リード', options: ['先鋒', '近距離', '火力', 'COST回復', 'エリート'], rarity: 5, photo: './charactor_icon/reed.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%AA%E3%83%BC%E3%83%89' },
+            { name: 'アステシア', options: ['前衛', '近距離', '火力', '防御', 'エリート'], rarity: 5, photo: './charactor_icon/astesia.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A2%E3%82%B9%E3%83%86%E3%82%B7%E3%82%A2' },
+            { name: 'インドラ', options: ['前衛', '近距離', '火力', '生存', 'エリート'], rarity: 5, photo: './charactor_icon/indra.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A4%E3%83%B3%E3%83%89%E3%83%A9' },
+            { name: 'エアースカーペ', options: ['前衛', '近距離', '火力', '範囲攻撃', 'エリート'], rarity: 5, photo: './charactor_icon/ayerscarpe.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A8%E3%82%A2%E3%83%BC%E3%82%B9%E3%82%AB%E3%83%BC%E3%83%9A' },
+            { name: 'ブローカ', options: ['前衛', '近距離', '生存', '範囲攻撃', 'エリート'], rarity: 5, photo: './charactor_icon/broca.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%96%E3%83%AD%E3%83%BC%E3%82%AB' },
+            { name: 'スペクター', options: ['前衛', '近距離', '生存', '範囲攻撃', 'エリート'], rarity: 5, photo: './charactor_icon/specter.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B9%E3%83%9A%E3%82%AF%E3%82%BF%E3%83%BC' },
+            { name: 'スワイヤー', options: ['前衛', '近距離', '火力', '支援', 'エリート'], rarity: 5, photo: './charactor_icon/swire.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B9%E3%83%AF%E3%82%A4%E3%83%A4%E3%83%BC' },
+            { name: 'アスベストス', options: ['重装', '近距離', '火力', '防御', 'エリート'], rarity: 5, photo: './charactor_icon/asbestos.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A2%E3%82%B9%E3%83%99%E3%82%B9%E3%83%88%E3%82%B9' },
+            { name: 'ヴァルカン', options: ['重装', '近距離', '火力', '生存', '防御', 'エリート'], rarity: 5, photo: './charactor_icon/vulcan.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%B4%E3%82%A1%E3%83%AB%E3%82%AB%E3%83%B3' },
+            { name: 'ウン', options: ['重装', '近距離', '防御', '治療', 'エリート'], rarity: 5, photo: './charactor_icon/hung.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A6%E3%83%B3' },
+            { name: 'クロワッサン', options: ['重装', '近距離', '防御', 'エリート'], rarity: 5, photo: './charactor_icon/croissant.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%AF%E3%83%AD%E3%83%AF%E3%83%83%E3%82%B5%E3%83%B3' },
+            { name: 'ニアール', options: ['重装', '近距離', '防御', '治療', 'エリート'], rarity: 5, photo: './charactor_icon/nearl.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%8B%E3%82%A2%E3%83%BC%E3%83%AB' },
+            { name: 'リスカム', options: ['重装', '近距離', '火力', '防御', 'エリート'], rarity: 5, photo: './charactor_icon/liskarm.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%AA%E3%82%B9%E3%82%AB%E3%83%A0' },
+            { name: 'アズリウス', options: ['狙撃', '遠距離', '火力', 'エリート'], rarity: 5, photo: './charactor_icon/bluepoison.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A2%E3%82%BA%E3%83%AA%E3%82%A6%E3%82%B9' },
+            { name: 'イグゼキュター', options: ['狙撃', '遠距離', '範囲攻撃', 'エリート'], rarity: 5, photo: './charactor_icon/executor.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A4%E3%82%B0%E3%82%BC%E3%82%AD%E3%83%A5%E3%82%BF%E3%83%BC' },
+            { name: 'グレースロート', options: ['狙撃', '遠距離', '火力', 'エリート'], rarity: 5, photo: './charactor_icon/greythroat.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B0%E3%83%AC%E3%83%BC%E3%82%B9%E3%83%AD%E3%83%BC%E3%83%88' },
+            { name: 'シェーシャ', options: ['狙撃', '遠距離', '範囲攻撃', '弱化', 'エリート'], rarity: 5, photo: './charactor_icon/sesa.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B7%E3%82%A7%E3%83%BC%E3%82%B7%E3%83%A3' },
+            { name: 'ファイヤーウォッチ', options: ['狙撃', '遠距離', '火力', '爆発力', 'エリート'], rarity: 5, photo: './charactor_icon/firewatch.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%95%E3%82%A1%E3%82%A4%E3%83%A4%E3%83%BC%E3%82%A6%E3%82%A9%E3%83%83%E3%83%81' },
+            { name: 'プラチナ', options: ['狙撃', '遠距離', '火力', 'エリート'], rarity: 5, photo: './charactor_icon/platinum.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%97%E3%83%A9%E3%83%81%E3%83%8A' },
+            { name: 'プロヴァンス', options: ['狙撃', '遠距離', '火力', 'エリート'], rarity: 5, photo: './charactor_icon/provence.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%97%E3%83%AD%E3%83%B4%E3%82%A1%E3%83%B3%E3%82%B9' },
+            { name: 'メテオリーテ', options: ['狙撃', '遠距離', '範囲攻撃', '弱化', 'エリート'], rarity: 5, photo: './charactor_icon/meteorite.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%A1%E3%83%86%E3%82%AA%E3%83%AA%E3%83%BC%E3%83%86' },
+            { name: 'ナイトメア', options: ['術師', '遠距離', '火力', '治療', '減速', 'エリート'], rarity: 5, photo: './charactor_icon/nightmare.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%8A%E3%82%A4%E3%83%88%E3%83%A1%E3%82%A2' },
+            { name: 'レイズ', options: ['術師', '遠距離', '火力', 'エリート'], rarity: 5, photo: './charactor_icon/leizi.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%AC%E3%82%A4%E3%82%BA' },
+            { name: 'レオンハルト', options: ['術師', '遠距離', '範囲攻撃', '爆発力', 'エリート'], rarity: 5, photo: './charactor_icon/leonhardt.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%AC%E3%82%AA%E3%83%B3%E3%83%8F%E3%83%AB%E3%83%88' },
+            { name: 'サイレンス', options: ['医療', '遠距離', '治療', 'エリート'], rarity: 5, photo: './charactor_icon/silence.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B5%E3%82%A4%E3%83%AC%E3%83%B3%E3%82%B9' },
+            { name: 'フィリオプシス', options: ['医療', '遠距離', '治療', '支援', 'エリート'], rarity: 5, photo: './charactor_icon/ptilopsis.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%95%E3%82%A3%E3%83%AA%E3%82%AA%E3%83%97%E3%82%B7%E3%82%B9' },
+            { name: 'ワルファリン', options: ['医療', '遠距離', '治療', '支援', 'エリート'], rarity: 5, photo: './charactor_icon/warfarin.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%AF%E3%83%AB%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3' },
+            { name: 'イースチナ', options: ['補助', '遠距離', '火力', '減速', 'エリート'], rarity: 5, photo: './charactor_icon/istina.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A4%E3%83%BC%E3%82%B9%E3%83%81%E3%83%8A' },
+            { name: 'グラウコス', options: ['補助', '遠距離', '減速', '牽制', 'エリート'], rarity: 5, photo: './charactor_icon/glaucus.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B0%E3%83%A9%E3%82%A6%E3%82%B3%E3%82%B9' },
+            { name: 'シャマレ', options: ['補助', '遠距離', '弱化', 'エリート'], rarity: 5, photo: './charactor_icon/shamare.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B7%E3%83%A3%E3%83%9E%E3%83%AC' },
+            { name: 'ツキノギ', options: ['補助', '遠距離', '生存', '支援', 'エリート'], rarity: 5, photo: './charactor_icon/tsukinogi.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%84%E3%82%AD%E3%83%8E%E3%82%AE' },
+            { name: 'プラマニクス', options: ['補助', '遠距離', '弱化', 'エリート'], rarity: 5, photo: './charactor_icon/pramanix.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%97%E3%83%A9%E3%83%9E%E3%83%8B%E3%82%AF%E3%82%B9' },
+            { name: 'メイヤー', options: ['補助', '遠距離', '牽制', '召喚', 'エリート'], rarity: 5, photo: './charactor_icon/mayer.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%A1%E3%82%A4%E3%83%A4%E3%83%BC' },
+            { name: 'エフイーター', options: ['特殊', '近距離', '減速', '強制移動', 'エリート'], rarity: 5, photo: './charactor_icon/feater.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A8%E3%83%95%E3%82%A4%E3%83%BC%E3%82%BF%E3%83%BC' },
+            { name: 'クリフハート', options: ['特殊', '近距離', '火力', '強制移動', 'エリート'], rarity: 5, photo: './charactor_icon/cliffheart.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%AF%E3%83%AA%E3%83%95%E3%83%8F%E3%83%BC%E3%83%88' },
+            { name: 'マンティコア', options: ['特殊', '近距離', '火力', '生存', 'エリート'], rarity: 5, photo: './charactor_icon/manticore.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%9E%E3%83%B3%E3%83%86%E3%82%A3%E3%82%B3%E3%82%A2' },
+            { name: 'レッド', options: ['特殊', '近距離', '牽制', '高速再配置', 'エリート'], rarity: 5, photo: './charactor_icon/red.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%AC%E3%83%83%E3%83%89' },
+            { name: 'ワイフー', options: ['特殊', '近距離', '弱化', '高速再配置', 'エリート'], rarity: 5, photo: './charactor_icon/waaifu.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%AF%E3%82%A4%E3%83%95%E3%83%BC' },
+
+            /*星4*/
+            { name: 'ヴィグナ', options: ['先鋒', '近距離', '火力', 'COST回復'], rarity: 4, photo: './charactor_icon/vigna.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%B4%E3%82%A3%E3%82%B0%E3%83%8A' },
+            { name: 'スカベンジャー', options: ['先鋒', '近距離', '火力', 'COST回復'], rarity: 4, photo: './charactor_icon/scavenger.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B9%E3%82%AB%E3%83%99%E3%83%B3%E3%82%B8%E3%83%A3%E3%83%BC' },
+            { name: 'テンニンカ', options: ['先鋒', '近距離', '治療', 'COST回復'], rarity: 4, photo: './charactor_icon/myrtle.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%86%E3%83%B3%E3%83%8B%E3%83%B3%E3%82%AB' },
+            { name: 'ウタゲ', options: ['前衛', '近距離', '火力', '生存'], rarity: 4, photo: './charactor_icon/utage.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A6%E3%82%BF%E3%82%B2' },
+            { name: 'エステル', options: ['前衛', '近距離', '生存', '範囲攻撃'], rarity: 4, photo: './charactor_icon/estelle.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A8%E3%82%B9%E3%83%86%E3%83%AB' },
+            { name: 'カッター', options: ['前衛', '近距離', '火力', '爆発力'], rarity: 4, photo: './charactor_icon/cutter.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%AB%E3%83%83%E3%82%BF%E3%83%BC' },
+            { name: 'ドーベルマン', options: ['前衛', '近距離', '火力', '支援'], rarity: 4, photo: './charactor_icon/dobermann.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%89%E3%83%BC%E3%83%99%E3%83%AB%E3%83%9E%E3%83%B3' },
+            { name: 'ビーハンター', options: ['前衛', '近距離', '火力'], rarity: 4, photo: './charactor_icon/beehunter.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%93%E3%83%BC%E3%83%8F%E3%83%B3%E3%82%BF%E3%83%BC' },
+            { name: 'フロストリーフ', options: ['前衛', '近距離', '火力', '減速'], rarity: 4, photo: './charactor_icon/frostleaf.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%95%E3%83%AD%E3%82%B9%E3%83%88%E3%83%AA%E3%83%BC%E3%83%95' },
+            { name: 'マトイマル', options: ['前衛', '近距離', '火力', '生存'], rarity: 4, photo: './charactor_icon/matoimaru.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%9E%E3%83%88%E3%82%A4%E3%83%9E%E3%83%AB' },
+            { name: 'ムース', options: ['前衛', '近距離', '火力'], rarity: 4, photo: './charactor_icon/mousse.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%A0%E3%83%BC%E3%82%B9' },
+            { name: 'クオーラ', options: ['重装', '近距離', '防御'], rarity: 4, photo: './charactor_icon/cuora.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%AF%E3%82%AA%E3%83%BC%E3%83%A9' },
+            { name: 'グム', options: ['重装', '近距離', '防御', '治療'], rarity: 4, photo: './charactor_icon/gummy.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B0%E3%83%A0' },
+            { name: 'マッターホルン', options: ['重装', '近距離', '防御'], rarity: 4, photo: './charactor_icon/matterhorn.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%9E%E3%83%83%E3%82%BF%E3%83%BC%E3%83%9B%E3%83%AB%E3%83%B3' },
+            { name: 'アンブリエル', options: ['狙撃', '遠距離', '火力', '減速'], rarity: 4, photo: './charactor_icon/ambriel.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A2%E3%83%B3%E3%83%96%E3%83%AA%E3%82%A8%E3%83%AB' },
+            { name: 'ヴァーミル', options: ['狙撃', '遠距離', '火力'], rarity: 4, photo: './charactor_icon/vermeil.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%B4%E3%82%A1%E3%83%BC%E3%83%9F%E3%83%AB' },
+            { name: 'ジェシカ', options: ['狙撃', '遠距離', '火力', '生存'], rarity: 4, photo: './charactor_icon/jessica.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B8%E3%82%A7%E3%82%B7%E3%82%AB' },
+            { name: 'シラユキ', options: ['狙撃', '遠距離', '範囲攻撃', '減速'], rarity: 4, photo: './charactor_icon/shirayuki.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B7%E3%83%A9%E3%83%A6%E3%82%AD' },
+            { name: 'メイ', options: ['狙撃', '遠距離', '火力', '減速'], rarity: 4, photo: './charactor_icon/may.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%A1%E3%82%A4' },
+            { name: 'メテオ', options: ['狙撃', '遠距離', '火力', '弱化'], rarity: 4, photo: './charactor_icon/meteor.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%A1%E3%83%86%E3%82%AA' },
+            { name: 'カシャ', options: ['術師', '遠距離', '火力', '牽制'], rarity: 4, photo: './charactor_icon/click.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%AB%E3%82%B7%E3%83%A3' },
+            { name: 'ギターノ', options: ['術師', '遠距離', '範囲攻撃'], rarity: 4, photo: './charactor_icon/gitano.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%AE%E3%82%BF%E3%83%BC%E3%83%8E' },
+            { name: 'グレイ', options: ['術師', '遠距離', '範囲攻撃', '減速'], rarity: 4, photo: './charactor_icon/greyy.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B0%E3%83%AC%E3%82%A4' },
+            { name: 'ヘイズ', options: ['術師', '遠距離', '火力', '弱化'], rarity: 4, photo: './charactor_icon/haze.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%98%E3%82%A4%E3%82%BA' },
+            { name: 'ススーロ', options: ['医療', '遠距離', '治療'], rarity: 4, photo: './charactor_icon/sussurro.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B9%E3%82%B9%E3%83%BC%E3%83%AD' },
+            { name: 'セイリュウ', options: ['医療', '遠距離', '治療', '支援'], rarity: 4, photo: './charactor_icon/purestream.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%BB%E3%82%A4%E3%83%AA%E3%83%A5%E3%82%A6' },
+            { name: 'パフューマー', options: ['医療', '遠距離', '治療'], rarity: 4, photo: './charactor_icon/perfumer.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%91%E3%83%95%E3%83%A5%E3%83%BC%E3%83%9E%E3%83%BC' },
+            { name: 'ミルラ', options: ['医療', '遠距離', '治療'], rarity: 4, photo: './charactor_icon/myrrh.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%9F%E3%83%AB%E3%83%A9' },
+            { name: 'アーススピリット', options: ['補助','遠距離', '減速'], rarity: 4, photo: './charactor_icon/earthspirit.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%A2%E3%83%BC%E3%82%B9%E3%82%B9%E3%83%94%E3%83%AA%E3%83%83%E3%83%88' },
+            { name: 'ポデンコ', options: ['補助','遠距離', '治療', '減速'], rarity: 4, photo: './charactor_icon/podenco.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%9D%E3%83%87%E3%83%B3%E3%82%B3' },
+            { name: 'グラベル', options: ['特殊', '近距離', '防御', '高速再配置'], rarity: 4, photo: './charactor_icon/gravel.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B0%E3%83%A9%E3%83%99%E3%83%AB' },
+            { name: 'ショウ', options: ['特殊', '近距離', '強制移動'], rarity: 4, photo: './charactor_icon/shaw.png', profileLink: 'https://arknights.wikiru.jp/?%E3%82%B7%E3%83%A7%E3%82%A6' },
+            { name: 'ロープ', options: ['特殊', '近距離', '強制移動'], rarity: 4, photo: './charactor_icon/rope.png', profileLink: 'https://arknights.wikiru.jp/?%E3%83%AD%E3%83%BC%E3%83%97' },         
+
+            /*星3*/
+            { name: 'プリュム', options: ['先鋒', '近距離', '火力', 'COST回復'], rarity: 3, photo: './charactor_icon/plume.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%97%E3%83%AA%E3%83%A5%E3%83%A0' },
+            { name: 'フェン', options: ['先鋒', '近距離', 'COST回復'], rarity: 3, photo: './charactor_icon/fang.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%95%E3%82%A7%E3%83%B3' },
+            { name: 'バニラ', options: ['先鋒', '近距離', 'COST回復'], rarity: 3, photo: './charactor_icon/vanilla.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%90%E3%83%8B%E3%83%A9' },
+            { name: 'メランサ', options: ['前衛', '近距離', '火力', '生存'], rarity: 3, photo: './charactor_icon/melantha.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%A1%E3%83%A9%E3%83%B3%E3%82%B5' },
+            { name: 'ミッドナイト', options: ['前衛', '近距離', '火力'], rarity: 3, photo: './charactor_icon/midnight.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%9F%E3%83%83%E3%83%89%E3%83%8A%E3%82%A4%E3%83%88' },
+            { name: 'ポプカル', options: ['前衛', '近距離', '生存', '範囲攻撃'], rarity: 3, photo: './charactor_icon/popukar.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%9D%E3%83%97%E3%82%AB%E3%83%AB' },
+            { name: 'ビーグル', options: ['重装','近距離', '防御'], rarity: 3, photo: './charactor_icon/beagle.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%93%E3%83%BC%E3%82%B0%E3%83%AB' },
+            { name: 'スポット', options: ['重装','近距離', '防御', '治療'], rarity: 3, photo: './charactor_icon/spot.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B9%E3%83%9D%E3%83%83%E3%83%88' },
+            { name: 'クルース', options: ['狙撃','遠距離', '火力'], rarity: 3, photo: './charactor_icon/kroos.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%AF%E3%83%AB%E3%83%BC%E3%82%B9' },
+            { name: 'カタパルト', options: ['狙撃','遠距離', '範囲攻撃'], rarity: 3, photo: './charactor_icon/catapult.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%AB%E3%82%BF%E3%83%91%E3%83%AB%E3%83%88' },
+            { name: 'アドナキエル', options: ['狙撃','遠距離', '火力'], rarity: 3, photo: './charactor_icon/adnachiel.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A2%E3%83%89%E3%83%8A%E3%82%AD%E3%82%A8%E3%83%AB' },
+            { name: 'ラヴァ', options: ['術師','遠距離', '範囲攻撃'], rarity: 3, photo: './charactor_icon/lava.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%A9%E3%83%B4%E3%82%A1' },
+            { name: 'スチュワード', options: ['術師','遠距離', '火力'], rarity: 3, photo: './charactor_icon/steward.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B9%E3%83%81%E3%83%A5%E3%83%AF%E3%83%BC%E3%83%89' },
+            { name: 'オーキッド', options: ['補助','遠距離', '減速'], rarity: 3, photo: './charactor_icon/orchid.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%AA%E3%83%BC%E3%82%AD%E3%83%83%E3%83%89' },
+            { name: 'アンセル', options: ['医療','遠距離', '治療'], rarity: 3, photo: './charactor_icon/ansel.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%A2%E3%83%B3%E3%82%BB%E3%83%AB' },
+            { name: 'ハイビスカス', options: ['医療','遠距離', '治療'], rarity: 3, photo: './charactor_icon/hibiscus.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%8F%E3%82%A4%E3%83%93%E3%82%B9%E3%82%AB%E3%82%B9' },
+            
+            /*星2*/
+            { name: 'ドゥリン', options: ['術師', '初期', '遠距離'], rarity: 2, photo: './charactor_icon/durin.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%89%E3%82%A5%E3%83%AA%E3%83%B3' },
+            { name: '12F', options: ['術師', '初期', '遠距離'], rarity: 2, photo: './charactor_icon/12f.png', profileLink: 'https://arknights.wikiru.jp/index.php?12F' },
+            { name: 'レンジャー', options: ['狙撃', '初期', '遠距離'], rarity: 2, photo: './charactor_icon/rangers.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%AC%E3%83%B3%E3%82%B8%E3%83%A3%E3%83%BC' },
+            { name: 'ノイルホーン', options: ['重装', '初期', '近距離'], rarity: 2, photo: './charactor_icon/noirhorn.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%8E%E3%82%A4%E3%83%AB%E3%83%9B%E3%83%BC%E3%83%B3' },
+            { name: 'ヤトウ', options: ['先鋒', '初期', '近距離'], rarity: 2, photo: './charactor_icon/yato.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%83%A4%E3%83%88%E3%82%A6' },
+            
+            /*星1*/
+            { name: 'Castle-3', options: ['前衛', '近距離', '支援', 'ロボット'], rarity: 1, photo: './charactor_icon/Castle-3.png', profileLink: 'https://arknights.wikiru.jp/index.php?Castle-3' },
+            { name: 'ジャスティスナイト', options: ['狙撃', '遠距離', '支援', 'ロボット'], rarity: 1, photo: './charactor_icon/justiceknight.png', profileLink: 'https://arknights.wikiru.jp/index.php?%E3%82%B8%E3%83%A3%E3%82%B9%E3%83%86%E3%82%A3%E3%82%B9%E3%83%8A%E3%82%A4%E3%83%88' },
+            { name: 'Lancet-2', options: ['医療', '遠距離', '治療', 'ロボット'], rarity: 1, photo: './charactor_icon/Lancet-2.png', profileLink: 'https://arknights.wikiru.jp/index.php?Lancet-2' },
+            { name: 'THRM-EX', options: ['特殊', '近距離', '爆発力', 'ロボット'], rarity: 1, photo: './charactor_icon/THRM-EX.png', profileLink: 'https://arknights.wikiru.jp/index.php?THRM-EX' },
+            
+            // Add more people with their respective options, photos, and profile links
+        ];
+
+        function generateCombinations() {
+            var checkboxes = document.getElementsByName('tag');
+            var selectedCheckboxes = [];
+
+            // Collect selected checkboxes
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    selectedCheckboxes.push(checkboxes[i].value);
+                }
+            }
+
+            // Display message if no checkbox is selected
+            var resultContainer = document.getElementById('result');
+            resultContainer.innerHTML = "";
+
+            if (selectedCheckboxes.length === 0) {
+                resultContainer.innerHTML = "タグが選択されていません";
+                return;
+            }
+
+            // Generate combinations
+            var combinations = [];
+            for (var i = 1; i <= Math.min(selectedCheckboxes.length, 3); i++) {
+                generateCombination(selectedCheckboxes, i, 0, [], combinations);
+            }
+
+            // Display combinations and matching people
+            for (var i = 0; i < combinations.length; i++) {
+                var combination = combinations[i];
+                var matchingPeople = findMatchingPeople(combination);
+
+                if (matchingPeople.length > 0) {
+                    // Sort matching people by rarity and then by name
+                    matchingPeople.sort((a, b) => a.rarity !== b.rarity ? b.rarity - a.rarity : a.name.localeCompare(b.name));
+
+                    // Display combination
+                    displayCombination(combination);
+
+                    // Display matching people
+                    displayMatchingPeople(matchingPeople);
+                }
+            }
+        }
+
+        function generateCombination(arr, len, start, current, result) {
+            if (len === 0) {
+                result.push(current.slice());
+                return;
+            }
+
+            for (var i = start; i < arr.length; i++) {
+                current.push(arr[i]);
+                generateCombination(arr, len - 1, i + 1, current, result);
+                current.pop();
+            }
+        }
+
+        function findMatchingPeople(combination) {
+            var matchingPeople = [];
+
+            for (var i = 0; i < people.length; i++) {
+                var personOptions = people[i].options;
+                var isMatching = combination.every(option => personOptions.includes(option));
+
+                if (isMatching && !combination.includes('上級エリート') && !personOptions.includes('上級エリート')) {
+                  matchingPeople.push(people[i]);
+                }else if (isMatching && combination.includes('上級エリート') && personOptions.includes('上級エリート')) {
+                  matchingPeople.push(people[i]);
+                }
+            }
+
+            return matchingPeople;
+        }
+
+        function displayCombination(combination) {
+            var combinationContainer = document.createElement('div');
+            combinationContainer.classList.add('combination-container');
+
+            var combinationText = document.createElement('div');
+            combinationText.classList.add('combination');
+            combinationText.innerHTML = '<div class="combination-options">' + combination.join(' + ') + '</div>';
+            combinationContainer.appendChild(combinationText);
+
+            var resultContainer = document.getElementById('result');
+            resultContainer.appendChild(combinationContainer);
+        }
+
+        function displayMatchingPeople(matchingPeople) {
+            var matchingPeopleContainer = document.createElement('div');
+            matchingPeopleContainer.classList.add('matching-people-container');
+
+            for (var i = 0; i < matchingPeople.length; i++) {
+                var person = matchingPeople[i];
+
+                // Create matching person container
+                var matchingPersonContainer = document.createElement('div');
+                matchingPersonContainer.classList.add('matching-person-container');
+
+                // Create matching person photo
+                var matchingPersonPhoto = document.createElement('img');
+                matchingPersonPhoto.src = person.photo;
+                matchingPersonPhoto.alt = person.name + "'s photo";
+                matchingPersonPhoto.classList.add('matching-person-photo');
+                matchingPersonPhoto.onclick = function(link) {
+                    return function() {
+                        window.open(link, '_blank');
+                    };
+                }(person.profileLink);
+
+                // Create matching person name link
+                var matchingPersonNameLink = document.createElement('a');
+                matchingPersonNameLink.href = person.profileLink;
+                matchingPersonNameLink.target = '_blank'; // Open link in a new tab
+                matchingPersonNameLink.classList.add('person-name');
+                // matchingPersonNameLink.innerText = person.name; // 名前表示
+
+                // Append photo and name to the matching person container
+                matchingPersonContainer.appendChild(matchingPersonPhoto);
+                matchingPersonContainer.appendChild(matchingPersonNameLink);
+
+                // Append matching person container to the matching people container
+                matchingPeopleContainer.appendChild(matchingPersonContainer);
+            }
+
+            var resultContainer = document.getElementById('result');
+            resultContainer.appendChild(matchingPeopleContainer);
+        }
+
+        function resetCheckboxes() {
+            var checkboxes = document.getElementsByName('tag');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = false;
+            }
+            generateCombinations(); // Call generateCombinations after resetting checkboxes
+        }
+
+        // Call generateCombinations on page load
+        window.onload = function () {
+            generateCombinations();
+        };
+    </script>
+</head>
+<body>
+    <h1>公開求人シミュレーター</h1>
+    <h3>タグを選択してください</h3>
+
+    <div id="tablebody">
+        <table>
+            <tbody>
+                <tr>
+                    <th width="15%">タイプ</th>
+                    <td>
+                        <ol class="kyujin-list">
+                            <li class="kyujin-list-item">
+                                <input id="先鋒" type="checkbox" name="tag"
+                                value="先鋒" onchange="generateCombinations()">
+                                <label for="先鋒">先鋒</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="前衛" type="checkbox" name="tag" 
+                                value="前衛" onchange="generateCombinations()">
+                                <label for="前衛">前衛</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="重装" type="checkbox" name="tag" 
+                                value="重装" onchange="generateCombinations()">
+                                <label for="重装">重装</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="狙撃" type="checkbox" name="tag" 
+                                value="狙撃" onchange="generateCombinations()">
+                                <label for="狙撃">狙撃</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="術師" type="checkbox" name="tag" 
+                                value="術師" onchange="generateCombinations()">
+                                <label for="術師">術師</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="医療" type="checkbox" name="tag" 
+                                value="医療" onchange="generateCombinations()">
+                                <label for="医療">医療</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="補助" type="checkbox" name="tag" 
+                                value="補助" onchange="generateCombinations()">
+                                <label for="補助">補助</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="特殊" type="checkbox" name="tag" 
+                                value="特殊" onchange="generateCombinations()">
+                                <label for="特殊">特殊</label>
+                            </li>
+                        </ol>
+                    </td>
+                </tr>
+                <tr>
+                    <th>距離</th>
+                    <td>
+                        <ol class="kyujin-list">
+                            <li class="kyujin-list-item">
+                                <input id="近距離" type="checkbox" name="tag" 
+                                value="近距離" onchange="generateCombinations()">
+                                <label for="近距離">近距離</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="遠距離" type="checkbox" name="tag"
+                                value="遠距離" onchange="generateCombinations()">
+                                <label for="遠距離">遠距離</label>
+                            </li>
+                        </ol>
+                    </td>
+                </tr>
+                <tr>
+                    <th>タグ</th>
+                    <td>
+                        <ol class="kyujin-list">
+                            <li class="kyujin-list-item">
+                                <input id="火力" type="checkbox" name="tag" 
+                                value="火力" onchange="generateCombinations()">
+                                <label for="火力">火力</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="防御" type="checkbox" name="tag" 
+                                value="防御" onchange="generateCombinations()">
+                                <label for="防御">防御</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="COST回復" type="checkbox" name="tag" 
+                                value="COST回復" onchange="generateCombinations()">
+                                <label for="COST回復">COST回復</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="範囲攻撃" type="checkbox" name="tag" 
+                                value="範囲攻撃" onchange="generateCombinations()">
+                                <label for="範囲攻撃">範囲攻撃</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="生存" type="checkbox" name="tag" 
+                                value="生存" onchange="generateCombinations()">
+                                <label for="生存">生存</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="治療" type="checkbox" name="tag" 
+                                value="治療" onchange="generateCombinations()">
+                                <label for="治療">治療</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="支援" type="checkbox" name="tag" 
+                                value="支援" onchange="generateCombinations()">
+                                <label for="支援">支援</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="弱化" type="checkbox" name="tag" 
+                                value="弱化" onchange="generateCombinations()">
+                                <label for="弱化">弱化</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="減速" type="checkbox" name="tag" 
+                                value="減速" onchange="generateCombinations()">
+                                <label for="減速">減速</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="強制移動" type="checkbox" name="tag" 
+                                value="強制移動" onchange="generateCombinations()">
+                                <label for="強制移動">強制移動</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="牽制" type="checkbox" name="tag" 
+                                value="牽制" onchange="generateCombinations()">
+                                <label for="牽制">牽制</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="爆発力" type="checkbox" name="tag" 
+                                value="爆発力" onchange="generateCombinations()">
+                                <label for="爆発力">爆発力</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="召喚" type="checkbox" name="tag" 
+                                value="召喚" onchange="generateCombinations()">
+                                <label for="召喚">召喚</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="高速再配置" type="checkbox" name="tag" 
+                                value="高速再配置" onchange="generateCombinations()">
+                                <label for="高速再配置">高速再配置</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="初期" type="checkbox" name="tag" 
+                                value="初期" onchange="generateCombinations()">
+                                <label for="初期">初期</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="ロボット" type="checkbox" name="tag" 
+                                value="ロボット" onchange="generateCombinations()">
+                                <label for="ロボット">ロボット</label>
+                            </li>
+                        </ol>
+                    </td>
+                </tr>
+                <tr>
+                    <th>高レア</th>
+                    <td>
+                        <ol class="kyujin-list">
+                            <li class="kyujin-list-item">
+                                <input id="エリート" type="checkbox" name="tag" 
+                                value="エリート" onchange="generateCombinations()">
+                                <label for="エリート">エリート</label>
+                            </li>
+                            <li class="kyujin-list-item">
+                                <input id="上級エリート" type="checkbox" name="tag" 
+                                value="上級エリート" onchange="generateCombinations()">
+                                <label for="上級エリート">上級エリート</label>
+                            </li>
+                        </ol>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <button type="button" onclick="resetCheckboxes()">タグをリセットする</button>
+    <div id="resultbox">
+        <div id="result"></div>
+    </div>
+
+</body>
+</html>
