@@ -249,6 +249,42 @@
                 generateCombination(selectedCheckboxes, i, 0, [], combinations);
             }
 
+            // Generate combinations
+            var combinations = [];
+            for (var i = 1; i <= Math.min(selectedCheckboxes.length, 3); i++) {
+                generateCombination(selectedCheckboxes, i, 0, [], combinations);
+            }
+
+            // combinationsからエリートを抜き出す
+            var eliteCombinations = [];
+            for (var i = 0; i < combinations.length; i++) {
+                if (combinations[i].includes('エリート')) {
+                    eliteCombinations.push(combinations.splice(i, 1)[0]);
+                    i--; // 要素が削除されたため、インデックスを調整
+                }
+            }
+
+            // 取り出した組み合わせを要素の数が少ない順に並べ替え
+            eliteCombinations.sort((a, b) => a.length - b.length);
+
+            // 並べ替えた組み合わせを再び combinations に追加
+            combinations.push(...eliteCombinations);
+
+            // combinationsから上級エリートを抜き出す
+            var senioreliteCombinations = [];
+            for (var i = 0; i < combinations.length; i++) {
+                if (combinations[i].includes('上級エリート')) {
+                    senioreliteCombinations.push(combinations.splice(i, 1)[0]);
+                    i--; // 要素が削除されたため、インデックスを調整
+                }
+            }
+
+            // 取り出した組み合わせを要素の数が少ない順に並べ替え
+            senioreliteCombinations.sort((a, b) => a.length - b.length);
+
+            // 並べ替えた組み合わせを再び combinations に追加
+            combinations.push(...senioreliteCombinations);
+
             combinations.reverse();
 
             // Display combinations and matching people
