@@ -53,7 +53,31 @@
             flex-direction: column;
             flex-wrap: wrap;
             align-items: center;
-            margin-right: 20px;
+            width: 12.5%;
+        }
+
+        @media (max-width:560px) {
+            .matching-person-container {
+                width: calc(100%/7);
+            }
+        }
+        
+        @media (max-width:490px) {
+            .matching-person-container {
+                width: calc(100%/6);
+            }
+        }
+        
+        @media (max-width:420px) {
+            .matching-person-container {
+                width: calc(100%/5);
+            }
+        }
+
+        @media (max-width:350px) {
+            .matching-person-container {
+                margin-right: 10px;
+            }
         }
 
         .matching-person-photo {
@@ -239,7 +263,7 @@
             resultContainer.innerHTML = "";
 
             if (selectedCheckboxes.length === 0) {
-                resultContainer.innerHTML = "タグが選択されていません";
+                resultContainer.innerHTML = "<br>タグが選択されていません";
                 return;
             }
 
@@ -593,8 +617,8 @@
         </table>
     </div>
     
-    <button type="button" onclick="resetCheckboxes()">タグをリセットする</button>
     <div id="resultbox">
+        <button type="button" onclick="resetCheckboxes()">タグをリセットする</button>
         <div id="result"></div>
     </div>
 
